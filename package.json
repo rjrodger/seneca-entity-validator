@@ -1,0 +1,44 @@
+{
+  "name": "seneca-entity-validator",
+  "version": "0.1.0",
+  "description": "Validate data entity fields against a schema",
+  "main": "entity-validator.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rjrodger/seneca-entity-validator.git"
+  },
+  "keywords": [
+    "seneca",
+    "data",
+    "entity",
+    "valid",
+    "validator",
+    "validation",
+    "field",
+    "plugin"
+  ],
+  "author": "Richard Rodger (http://richardrodger.com)",
+  "license": "MIT",
+  "dependencies": {
+    "underscore": "~1.6.0",
+    "parambulator": "~0.1.7"
+  },
+  "peerDependencies": {
+    "seneca": "*"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "seneca": "~0.5.17",
+    "express": "~4.1.2",
+    "gex": "~0.1.4",
+    "jsonic": "~0.1.1"
+  },
+  "files": [
+    "README.md",
+    "LICENSE.txt",
+    "entity-validator.js"
+  ]
+}

@@ -1,4 +1,6 @@
 seneca-entity-validator
 =======================
 
-Validate data entity fields against a schema
+Validate data entity fields against a schema.
+
+

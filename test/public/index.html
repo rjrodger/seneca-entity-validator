@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head>
+<script src="/underscore.js"></script>
+<script src="/gex.js"></script>
+<script src="/jsonic.js"></script>
+<script src="/parambulator.js"></script>
+<script src="/entity-validator/rules"></script>
+<script>
+window.onload = function() {
+  var body = document.getElementsByTagName('body')[0]
+  window.validation.foo.validate(
+    {a:'AAAzed'},
+    function(err,out){body.innerHTML+='<p>should be null:'+err+'</p>'})
+
+  window.validation.foo.validate(
+    {a:'zed'},
+    function(err,out){body.innerHTML+='<p>should be error:'+JSON.stringify(err.parambulator)+'</p>'})
+}
+</script>
+</head><body>
+</body></html>
+
