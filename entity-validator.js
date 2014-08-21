@@ -22,7 +22,7 @@ module.exports = function( options ) {
     web:true,
     prefs:{rules:{}}
   },options)
-  
+
 
 
 
@@ -31,7 +31,7 @@ module.exports = function( options ) {
 
 
   // actions provided
-  seneca.add({ role: plugin, 
+  seneca.add({ role: plugin,
                cmd:  'add',
 
                entity:{
@@ -47,12 +47,12 @@ module.exports = function( options ) {
                  object$:   true,
                }
 
-             }, 
+             },
              cmd_add )
 
 
-  seneca.add({ role: plugin, 
-               cmd:  'generate_code' 
+  seneca.add({ role: plugin,
+               cmd:  'generate_code'
              },
              cmd_generate_code )
 
@@ -73,29 +73,47 @@ module.exports = function( options ) {
     var pb = parambulator(rules,prefs)
 
     specmap[entitydefstr] = {entity:entitydef,rules:rules,prefs:prefs,pb:pb}
-    
+
 
     return function( args, done ) {
       var seneca = this
 
       pb.validate(args.ent,function(err){
         if( err ) {
-          return done( 
-            seneca.fail(
-              'entity-invalid',
-              { entity:    args.ent,
-                code:      err.parambulator.code,
-                property:  err.parambulator.property,
-                value:     err.parambulator.value,
-                expected:  err.parambulator.expected,
-                parambulator:parambulator
-              }))
+          return done(error(args.ent, err.parambulator))
         }
 
         seneca.prior(args,done)
       })
     }
   }
+
+  function error(entity, details) {
+    var err = new Error('entity-invalid');
+
+    err.entity     = entity;
+    err.httpstatus = 400;
+    err.code       = details.code;
+    err.property   = details.property;
+    err.value      = details.value;
+    err.expected   = details.expected;
+    err.toString   = selfErrorString;
+
+    return err;
+  }
+
+function selfErrorString() {
+  var jsonReadyError = {
+    entity      : this.entity,
+    message     : this.message,
+    httpstatus  : this.httpstatus,
+    code        : this.code,
+    property    : this.property,
+    value       : this.value,
+    expected    : this.expected
+  };
+  return JSON.stringify(jsonReadyError);
+}
 
 
 
