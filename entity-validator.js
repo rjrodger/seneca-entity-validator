@@ -54,11 +54,10 @@ module.exports = function( options ) {
   seneca.add({ role: plugin,
                cmd:  'generate_code'
              },
-             cmd_generate_code )
+             function(args, callback) {
+               callback(undefined, generate_code(args));
+             } )
 
-
-
-  handle_options( options )
 
 
 
@@ -103,32 +102,30 @@ module.exports = function( options ) {
     return err;
   }
 
-function selfErrorString() {
-  var jsonReadyError = {
-    message     : this.message,
-    httpstatus  : this.httpstatus,
-    code        : this.code,
-    property    : this.property,
-    value       : this.value,
-    expected    : this.expected
-  };
-  return JSON.stringify(jsonReadyError);
-}
-
-
+  function selfErrorString() {
+    var jsonReadyError = {
+      message     : this.message,
+      httpstatus  : this.httpstatus,
+      code        : this.code,
+      property    : this.property,
+      value       : this.value,
+      expected    : this.expected
+    };
+    return JSON.stringify(jsonReadyError);
+  }
 
   function cmd_add( args, done ) {
     var seneca = this
-
-    var entitydef = _.extend({},seneca.util.parsecanon(args.entity))
-    seneca.add('role:entity,cmd:save',entitydef,validator(entitydef,args.rules,options.prefs))
-
+    add_entity_save_interceptor(args.entity, args.rules);
     done()
   }
 
+  function add_entity_save_interceptor(entity, rules) {
+    var entitydef = _.extend({},seneca.util.parsecanon(entity))
+    seneca.add('role:entity,cmd:save',entitydef,validator(entitydef,rules,options.prefs))
+  }
 
-
-  function cmd_generate_code( args, done ) {
+  function generate_code( args ) {
 
     var prefs = ['var prefs={rules:{']
     _.each(options.prefs.rules,function(v,k){
@@ -151,17 +148,14 @@ function selfErrorString() {
 
     generated_code = js.join('')
 
-    done(null,generated_code)
+    return generated_code;
   }
 
 
-
-
-  function handle_options( options ) {
-    _.each(options.ruleset,function(item){
-      seneca.act( { role:plugin, cmd:'add', entity:item.entity, rules:item.rules} )
-    })
-  }
+  // Handle options
+  _.each(options.ruleset,function(item){
+    add_entity_save_interceptor(item.entity, item.rules)
+  })
 
 
   // web interface
