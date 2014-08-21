@@ -80,7 +80,7 @@ module.exports = function( options ) {
 
       pb.validate(args.ent,function(err){
         if( err ) {
-          return done(error(args.ent, err.parambulator))
+          return done(buildSerializableError(err))
         }
 
         seneca.prior(args,done)
@@ -88,15 +88,16 @@ module.exports = function( options ) {
     }
   }
 
-  function error(entity, details) {
-    var err = new Error('entity-invalid');
+  function buildSerializableError(err) {
+    var err = new Error(err.message);
 
-    err.entity     = entity;
     err.httpstatus = 400;
-    err.code       = details.code;
-    err.property   = details.property;
-    err.value      = details.value;
-    err.expected   = details.expected;
+    if(err.parambulator) {
+      err.code       = err.parambulator.code;
+      err.property   = err.parambulator.property;
+      err.value      = err.parambulator.value;
+      err.expected   = err.parambulator.expected;
+    }
     err.toString   = selfErrorString;
 
     return err;
@@ -104,7 +105,6 @@ module.exports = function( options ) {
 
 function selfErrorString() {
   var jsonReadyError = {
-    entity      : this.entity,
     message     : this.message,
     httpstatus  : this.httpstatus,
     code        : this.code,
