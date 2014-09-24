@@ -22,7 +22,7 @@ module.exports = function( options ) {
     web:true,
     prefs:{rules:{}}
   },options)
-  
+
 
 
 
@@ -31,7 +31,7 @@ module.exports = function( options ) {
 
 
   // actions provided
-  seneca.add({ role: plugin, 
+  seneca.add({ role: plugin,
                cmd:  'add',
 
                entity:{
@@ -47,18 +47,17 @@ module.exports = function( options ) {
                  object$:   true,
                }
 
-             }, 
+             },
              cmd_add )
 
 
-  seneca.add({ role: plugin, 
-               cmd:  'generate_code' 
+  seneca.add({ role: plugin,
+               cmd:  'generate_code'
              },
-             cmd_generate_code )
+             function(args, callback) {
+               callback(undefined, generate_code(args));
+             } )
 
-
-
-  handle_options( options )
 
 
 
@@ -73,23 +72,14 @@ module.exports = function( options ) {
     var pb = parambulator(rules,prefs)
 
     specmap[entitydefstr] = {entity:entitydef,rules:rules,prefs:prefs,pb:pb}
-    
+
 
     return function( args, done ) {
       var seneca = this
 
       pb.validate(args.ent,function(err){
         if( err ) {
-          return done( 
-            seneca.fail(
-              'entity-invalid',
-              { entity:    args.ent,
-                code:      err.parambulator.code,
-                property:  err.parambulator.property,
-                value:     err.parambulator.value,
-                expected:  err.parambulator.expected,
-                parambulator:parambulator
-              }))
+          return done(buildSerializableError(err))
         }
 
         seneca.prior(args,done)
@@ -97,20 +87,45 @@ module.exports = function( options ) {
     }
   }
 
+  function buildSerializableError(err) {
+    var err = new Error(err.message);
 
+    err.httpstatus = 400;
+    if(err.parambulator) {
+      err.code       = err.parambulator.code;
+      err.property   = err.parambulator.property;
+      err.value      = err.parambulator.value;
+      err.expected   = err.parambulator.expected;
+    }
+    err.toString   = selfErrorString;
+
+    return err;
+  }
+
+  function selfErrorString() {
+    var jsonReadyError = {
+      message     : this.message,
+      httpstatus  : this.httpstatus,
+      code        : this.code,
+      property    : this.property,
+      value       : this.value,
+      expected    : this.expected
+    };
+    return JSON.stringify(jsonReadyError);
+  }
 
   function cmd_add( args, done ) {
     var seneca = this
-
-    var entitydef = _.extend({},seneca.util.parsecanon(args.entity))
-    seneca.add('role:entity,cmd:save',entitydef,validator(entitydef,args.rules,options.prefs))
-
+    add_entity_save_interceptor(args.entity, args.rules);
     done()
   }
 
+  function add_entity_save_interceptor(entity, rules) {
+    var entitydef = _.extend({},seneca.util.parsecanon(entity))
+    seneca.add('role:entity,cmd:save',entitydef,validator(entitydef,rules,options.prefs))
+  }
 
-
-  function cmd_generate_code( args, done ) {
+  function generate_code( args ) {
 
     var prefs = ['var prefs={rules:{']
     _.each(options.prefs.rules,function(v,k){
@@ -133,17 +148,14 @@ module.exports = function( options ) {
 
     generated_code = js.join('')
 
-    done(null,generated_code)
+    return generated_code;
   }
 
 
-
-
-  function handle_options( options ) {
-    _.each(options.ruleset,function(item){
-      seneca.act( { role:plugin, cmd:'add', entity:item.entity, rules:item.rules} )
-    })
-  }
+  // Handle options
+  _.each(options.ruleset,function(item){
+    add_entity_save_interceptor(item.entity, item.rules)
+  })
 
 
   // web interface
