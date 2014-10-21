@@ -76,14 +76,18 @@ module.exports = function( options ) {
 
     return function( args, done ) {
       var seneca = this
-
-      pb.validate(args.ent,function(err){
-        if( err ) {
-          return done(buildSerializableError(err))
-        }
-
+      if(args.bypassRules$){
         seneca.prior(args,done)
-      })
+      }
+      else {
+        pb.validate(args.ent, function (err) {
+          if (err) {
+            return done(buildSerializableError(err))
+          }
+
+          seneca.prior(args, done)
+        })
+      }
     }
   }
 
