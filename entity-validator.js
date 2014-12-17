@@ -82,7 +82,7 @@ module.exports = function( options ) {
       else {
         pb.validate(args.ent, function (err) {
           if (err) {
-            return done(buildSerializableError(err))
+            return done(buildSerializableErrors(err))
           }
 
           seneca.prior(args, done)
@@ -91,19 +91,37 @@ module.exports = function( options ) {
     }
   }
 
-  function buildSerializableError(err) {
-    var err = new Error(err.message);
-
-    err.httpstatus = 400;
-    if(err.parambulator) {
-      err.code       = err.parambulator.code;
-      err.property   = err.parambulator.property;
-      err.value      = err.parambulator.value;
-      err.expected   = err.parambulator.expected;
+  function buildSerializableErrors(err) {
+    if(_.isArray(err)) {
+      _.each(err, function(error, index, err) {
+        err[index] = buildSerializableError(error)
+      })
+      return err
+    } else {
+      return buildSerializableError(err)
     }
-    err.toString   = selfErrorString;
+  }
 
-    return err;
+  function buildSerializableError(err) {
+    var serializableError = new Error(err.message);
+
+    serializableError.httpstatus = 400;
+
+    // seneca always overrides the error.code to 'action-error'
+    serializableError.errortype  = 'entity-invalid';
+    serializableError.code       = 'entity-invalid';
+
+    if(err.parambulator) {
+      serializableError.valmap = {
+        code: err.parambulator.code,
+        property: err.parambulator.property,
+        value: err.parambulator.value,
+        expected: err.parambulator.expected
+      }
+    }
+    serializableError.toString   = selfErrorString;
+
+    return serializableError;
   }
 
   function selfErrorString() {

@@ -16,7 +16,7 @@ var seneca  = require('seneca')
 
 
 describe('entity-validator', function() {
-  
+
   it('happy', function(fin) {
     var si = seneca()
     si.use('..')
@@ -37,11 +37,12 @@ describe('entity-validator', function() {
       assert.equal(2,out.b)
 
       fooent.make$({a:2,b:2}).save$(function(err,out){
-        assert.equal(err.seneca.code,'entity-invalid')
-        assert.equal(err.seneca.valmap.code,'eq$')
-        assert.equal(err.seneca.valmap.property,'a')
-        assert.equal(err.seneca.valmap.value,2)
-        assert.equal(err.seneca.valmap.expected,1)
+        // console.log('GEETING', JSON.stringify(err))
+        assert.equal(err.errortype,'entity-invalid')
+        assert.equal(err.valmap.code,'eq$')
+        assert.equal(err.valmap.property,'a')
+        assert.equal(err.valmap.value,2)
+        assert.equal(err.valmap.expected,1)
 
         fin()
       })
@@ -71,18 +72,18 @@ describe('entity-validator', function() {
         assert.equal(2,out.b)
 
         fooent.make$({a:2}).save$(function(err,out){
-          assert.equal(err.seneca.code,'entity-invalid')
-          assert.equal(err.seneca.valmap.code,'eq$')
-          assert.equal(err.seneca.valmap.property,'a')
-          assert.equal(err.seneca.valmap.value,2)
-          assert.equal(err.seneca.valmap.expected,1)
+          assert.equal(err.errortype,'entity-invalid')
+          assert.equal(err.valmap.code,'eq$')
+          assert.equal(err.valmap.property,'a')
+          assert.equal(err.valmap.value,2)
+          assert.equal(err.valmap.expected,1)
 
           barent.make$({b:1}).save$(function(err,out){
-            assert.equal(err.seneca.code,'entity-invalid')
-            assert.equal(err.seneca.valmap.code,'eq$')
-            assert.equal(err.seneca.valmap.property,'b')
-            assert.equal(err.seneca.valmap.value,1)
-            assert.equal(err.seneca.valmap.expected,2)
+            assert.equal(err.errortype,'entity-invalid')
+            assert.equal(err.valmap.code,'eq$')
+            assert.equal(err.valmap.property,'b')
+            assert.equal(err.valmap.value,1)
+            assert.equal(err.valmap.expected,2)
 
             fin()
           })
