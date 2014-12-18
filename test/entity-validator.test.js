@@ -92,6 +92,71 @@ describe('entity-validator', function() {
     })
   })
 
+  it('multiErrors', function(fin) {
+    var si = seneca()
+    si.use('..', {
+      ruleset:[
+        {entity:'foo',rules:{a:'required$', b:'required$'}}
+      ],
+      prefs: {
+        multiErrors: true
+      }
+    })
+
+    var fooent = si.make$('foo')
+
+    fooent.make$({a:1,b:2}).save$(function(err,out){
+      if(err) return fin(err);
+
+      assert.equal(1,out.a)
+      assert.equal(2,out.b)
+
+      fooent.make$({a:1}).save$(function(err,out){
+
+        assert.ok(err.errors)
+        assert.equal(err.errors.length,1)
+        var validationError = err.errors[0]
+
+        assert.equal(validationError.errortype,'entity-invalid')
+        assert.equal(validationError.valmap.code,'required$')
+        assert.equal(validationError.valmap.property,'b')
+        assert.equal(validationError.valmap.expected,'b')
+
+        fooent.make$({b:2}).save$(function(err, out) {
+          assert.ok(err.errors)
+          assert.equal(err.errors.length,1)
+          var validationError = err.errors[0]
+
+          assert.equal(validationError.errortype,'entity-invalid')
+          assert.equal(validationError.valmap.code,'required$')
+          assert.equal(validationError.valmap.property,'a')
+          assert.equal(validationError.valmap.expected,'a')
+
+
+          fooent.make$({}).save$(function(err, out) {
+
+            assert.ok(err.errors)
+
+            assert.equal(err.errors.length,2)
+            var validationError = err.errors[0]
+            assert.equal(validationError.errortype,'entity-invalid')
+            assert.equal(validationError.valmap.code,'required$')
+            assert.equal(validationError.valmap.property,'a')
+            assert.equal(validationError.valmap.expected,'a')
+
+            var validationError = err.errors[1]
+            assert.equal(validationError.errortype,'entity-invalid')
+            assert.equal(validationError.valmap.code,'required$')
+            assert.equal(validationError.valmap.property,'b')
+            assert.equal(validationError.valmap.expected,'b')
+
+            fin()
+          })
+        })
+      })
+    })
+  })
+
 
   it('code', function(fin) {
     var si = seneca()

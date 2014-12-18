@@ -96,6 +96,11 @@ module.exports = function( options ) {
       _.each(err, function(error, index, err) {
         err[index] = buildSerializableError(error)
       })
+      var errors = err
+      // seneca will replace the array of errors with a generic one if we return
+      // the array as is. Hence we have to wrap the array within another error
+      err = new Error('Validation error(s)')
+      err.errors = errors
       return err
     } else {
       return buildSerializableError(err)
@@ -108,8 +113,9 @@ module.exports = function( options ) {
     serializableError.httpstatus = 400;
 
     // seneca always overrides the error.code to 'action-error'
-    serializableError.errortype  = 'entity-invalid';
-    serializableError.code       = 'entity-invalid';
+    // I still chose to set the error.code, in case seneca stops overriding it
+    serializableError.errortype  = 'entity-invalid'
+    serializableError.code       = 'entity-invalid'
 
     if(err.parambulator) {
       serializableError.valmap = {
@@ -133,7 +139,13 @@ module.exports = function( options ) {
       value       : this.value,
       expected    : this.expected
     };
-    return JSON.stringify(jsonReadyError);
+    if(this.errors) {
+      jsonReadyError.errors = []
+      _.each(this.errors, function(error) {
+        jsonReadyError.errors.push(JSON.parse(error.toString))
+      })
+    }
+    return JSON.stringify(jsonReadyError)
   }
 
   function cmd_add( args, done ) {
