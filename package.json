@@ -1,6 +1,6 @@
 {
   "name": "seneca-entity-validator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Validate data entity fields against a schema",
   "main": "entity-validator.js",
   "scripts": {
