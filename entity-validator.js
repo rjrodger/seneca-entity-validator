@@ -125,7 +125,7 @@ module.exports = function( options ) {
         expected: err.parambulator.expected
       }
     }
-    serializableError.toString   = selfErrorString;
+    serializableError.toJSON = serializableError.toString = selfErrorString;
 
     return serializableError;
   }
@@ -134,15 +134,15 @@ module.exports = function( options ) {
     var jsonReadyError = {
       message     : this.message,
       httpstatus  : this.httpstatus,
-      code        : this.code,
-      property    : this.property,
-      value       : this.value,
-      expected    : this.expected
+      code        : this.valmap.code,
+      property    : this.valmap.property,
+      value       : this.valmap.value,
+      expected    : this.valmap.expected
     };
     if(this.errors) {
       jsonReadyError.errors = []
       _.each(this.errors, function(error) {
-        jsonReadyError.errors.push(JSON.parse(error.toString))
+        jsonReadyError.errors.push(JSON.parse(error.toJSON()))
       })
     }
     return JSON.stringify(jsonReadyError)
