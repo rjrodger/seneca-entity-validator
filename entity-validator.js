@@ -134,10 +134,10 @@ module.exports = function( options ) {
     var jsonReadyError = {
       message     : this.message,
       httpstatus  : this.httpstatus,
-      code        : this.valmap.code,
-      property    : this.valmap.property,
-      value       : this.valmap.value,
-      expected    : this.valmap.expected
+      code        : this.valmap ? this.valmap.code : undefined,
+      property    : this.valmap ? this.valmap.property : undefined,
+      value       : this.valmap ? this.valmap.value : undefined,
+      expected    : this.valmap ? this.valmap.expected : undefined
     };
     if(this.errors) {
       jsonReadyError.errors = []
