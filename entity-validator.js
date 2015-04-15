@@ -125,7 +125,7 @@ module.exports = function( options ) {
         expected: err.parambulator.expected
       }
     }
-    serializableError.toJSON = serializableError.toString = selfErrorString;
+    //serializableError.toJSON = serializableError.toString = selfErrorString;
 
     return serializableError;
   }
